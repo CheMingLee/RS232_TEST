@@ -4,6 +4,7 @@
 
 #pragma once
 
+int BLAZER_CmdTrans(BYTE * buf, int iRW, BYTE cmd, BYTE data_H, BYTE data_L);
 
 // CRS232BinaryDlg 對話方塊
 class CRS232BinaryDlg : public CDialogEx
@@ -31,4 +32,17 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
+private:
+	HANDLE m_hCom;
+	OVERLAPPED m_ovRW;
+public:
+	BOOL Open(int iComPort);
+	BOOL Close();
+	BOOL Write(LPCSTR lpStr, DWORD iSize);
+	long Read(LPSTR lpStr, int iSize);
+	int m_iComPort;
+	afx_msg void OnBnClickedButtonWOnline();
+	afx_msg void OnBnClickedButtonWOffline();
+	afx_msg void OnBnClickedButtonSetCom();
+	afx_msg void OnDestroy();
 };
