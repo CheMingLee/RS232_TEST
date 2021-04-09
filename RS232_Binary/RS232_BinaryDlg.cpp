@@ -134,8 +134,7 @@ BOOL CRS232BinaryDlg::OnInitDialog()
 
 	// TODO: 在此加入額外的初始設定
 	m_hCom = INVALID_HANDLE_VALUE;
-	UpdateData(TRUE);
-	Open(m_iComPort);
+	GetDlgItem(IDC_STATIC_STATUS)->SetWindowText("Disonnected");
 
 	return TRUE;  // 傳回 TRUE，除非您對控制項設定焦點
 }
@@ -365,9 +364,15 @@ void CRS232BinaryDlg::OnBnClickedButtonWOffline()
 
 void CRS232BinaryDlg::OnBnClickedButtonSetCom()
 {
+	int ret;
+
 	Close();
 	UpdateData(TRUE);
-	Open(m_iComPort);
+	ret = Open(m_iComPort);
+	if (ret)
+		GetDlgItem(IDC_STATIC_STATUS)->SetWindowText("Connected");
+	else
+		GetDlgItem(IDC_STATIC_STATUS)->SetWindowText("Disonnected");
 }
 
 
