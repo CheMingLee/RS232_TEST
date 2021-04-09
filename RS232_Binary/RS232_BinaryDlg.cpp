@@ -17,28 +17,25 @@ int BLAZER_CmdTrans(BYTE * buf, int iRW, BYTE cmd, BYTE data_H, BYTE data_L)
 	int i;
 	int iPtr = 0;
 	BYTE ckeck_xor = 0x00;
-	BYTE HexBuf[256];
 
-	HexBuf[iPtr++] = 0x1a;
+	buf[iPtr++] = 0x1a;
 	if (iRW == 0) //Read
 	{
-		HexBuf[iPtr++] = 0x03;
+		buf[iPtr++] = 0x03;
 	}
 	else if (iRW == 1) //Write
 	{
-		HexBuf[iPtr++] = 0x06;
+		buf[iPtr++] = 0x06;
 	}
-	HexBuf[iPtr++] = 0xaa;
-	HexBuf[iPtr++] = cmd;
-	HexBuf[iPtr++] = data_H;
-	HexBuf[iPtr++] = data_L;
+	buf[iPtr++] = 0xaa;
+	buf[iPtr++] = cmd;
+	buf[iPtr++] = data_H;
+	buf[iPtr++] = data_L;
 	for (i = 0; i < 6; i++)
-		ckeck_xor ^= HexBuf[i];
-	HexBuf[iPtr++] = ckeck_xor;
-	HexBuf[iPtr++] = 0xef;
-	HexBuf[iPtr++] = 0xf0;
-
-	buf = HexBuf;
+		ckeck_xor ^= buf[i];
+	buf[iPtr++] = ckeck_xor;
+	buf[iPtr++] = 0xef;
+	buf[iPtr++] = 0xf0;
 
 	return iPtr;
 }
@@ -197,7 +194,7 @@ BOOL CRS232BinaryDlg::Open(int iComPort)
 	char szBuff[20];
 	sprintf_s(szBuff, "COM%d", iComPort);
 
-	m_hCom = CreateFile((LPCWSTR)szBuff, GENERIC_READ | GENERIC_WRITE,
+	m_hCom = CreateFile(szBuff, GENERIC_READ | GENERIC_WRITE,
 		0,    // exclusive access 
 		NULL, // no security attributes 
 		OPEN_EXISTING,
@@ -240,7 +237,7 @@ BOOL CRS232BinaryDlg::Open(int iComPort)
 	dcb.fParity = FALSE;
 	dcb.StopBits = (BYTE)0;
 
-	dcb.BaudRate = CBR_57600;
+	dcb.BaudRate = CBR_19200;
 	dcb.fBinary = TRUE;
 	dcb.fOutxCtsFlow = 0;
 	dcb.fOutxDsrFlow = 0;
@@ -314,11 +311,13 @@ long CRS232BinaryDlg::Read(LPSTR lpStr, int iSize)
 
 void CRS232BinaryDlg::OnBnClickedButtonWOnline()
 {
-	int ret;
+	int ret, i;
 	int iSize;
 	BYTE buf[256];
 	BYTE rData[256];
-	CString str;
+	CString str, strShow;
+
+	memset(rData, 0, 256);
 
 	iSize = BLAZER_CmdTrans(buf, 1, 0x01, 0x00, 0x01);
 	Write((LPCSTR)buf, iSize);
@@ -326,28 +325,40 @@ void CRS232BinaryDlg::OnBnClickedButtonWOnline()
 	ret = Read((LPSTR)rData, 256);
 	if (ret > 0)
 	{
-		str.Format(_T("%02X %02X %02X %02X %02X %02X %02X %02X %02X"), rData[0], rData[1], rData[2], rData[3], rData[4], rData[5], rData[6], rData[7], rData[8]);
-		GetDlgItem(IDC_STATIC_R)->SetWindowTextW((LPCTSTR)rData);
+		strShow = "";
+		for (i = 0; i < ret; i++)
+		{
+			str.Format(_T("%02X"), rData[i]);
+			strShow += str;
+		}
+		GetDlgItem(IDC_STATIC_R)->SetWindowText(strShow);
 	}
 }
 
 
 void CRS232BinaryDlg::OnBnClickedButtonWOffline()
 {
-	int ret;
+	int ret, i;
 	int iSize;
 	BYTE buf[256];
 	BYTE rData[256];
-	CString str;
+	CString str, strShow;
 
+	memset(rData, 0, 256);
+	
 	iSize = BLAZER_CmdTrans(buf, 1, 0x01, 0x00, 0x00);
 	Write((LPCSTR)buf, iSize);
 
 	ret = Read((LPSTR)rData, 256);
 	if (ret > 0)
 	{
-		str.Format(_T("%02X %02X %02X %02X %02X %02X %02X %02X %02X"), rData[0], rData[1], rData[2], rData[3], rData[4], rData[5], rData[6], rData[7], rData[8]);
-		GetDlgItem(IDC_STATIC_R)->SetWindowTextW(str);
+		strShow = "";
+		for (i = 0; i < ret; i++)
+		{
+			str.Format(_T("%02X"), rData[i]);
+			strShow += str;
+		}
+		GetDlgItem(IDC_STATIC_R)->SetWindowText(strShow);
 	}
 }
 
