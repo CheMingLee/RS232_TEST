@@ -198,7 +198,7 @@ BOOL CRS232ASCIIDlg::Open(int iComPort)
 	char szBuff[20];
 	sprintf_s(szBuff, "COM%d", iComPort);
 
-	m_hCom = CreateFile((LPCWSTR)szBuff, GENERIC_READ | GENERIC_WRITE,
+	m_hCom = CreateFile(szBuff, GENERIC_READ | GENERIC_WRITE,
 		0,    // exclusive access 
 		NULL, // no security attributes 
 		OPEN_EXISTING,
@@ -241,7 +241,7 @@ BOOL CRS232ASCIIDlg::Open(int iComPort)
 	dcb.fParity = FALSE;
 	dcb.StopBits = (BYTE)0;
 
-	dcb.BaudRate = CBR_57600;
+	dcb.BaudRate = CBR_19200;
 	dcb.fBinary = TRUE;
 	dcb.fOutxCtsFlow = 0;
 	dcb.fOutxDsrFlow = 0;
@@ -320,13 +320,16 @@ void CRS232ASCIIDlg::OnBnClickedButtonWOnline()
 	char buf[256];
 	BYTE rData[256];
 
+	memset(rData, 0, 256);
+
 	iSize = BLAZER_CmdTrans(buf, 1, 0x01, 0x00, 0x01);
 	Write(buf, iSize);
+	Write("\x0d", 1);
 
 	ret = Read((LPSTR)rData, 256);
 	if (ret > 0)
 	{
-		GetDlgItem(IDC_STATIC_R)->SetWindowTextW((LPCTSTR)rData);
+		GetDlgItem(IDC_STATIC_R)->SetWindowText((LPCTSTR)rData);
 	}
 }
 
@@ -338,13 +341,16 @@ void CRS232ASCIIDlg::OnBnClickedButtonWOffline()
 	char buf[256];
 	BYTE rData[256];
 
+	memset(rData, 0, 256);
+
 	iSize = BLAZER_CmdTrans(buf, 1, 0x01, 0x00, 0x00);
 	Write(buf, iSize);
+	Write("\x0d", 1);
 
 	ret = Read((LPSTR)rData, 256);
 	if (ret > 0)
 	{
-		GetDlgItem(IDC_STATIC_R)->SetWindowTextW((LPCTSTR)rData);
+		GetDlgItem(IDC_STATIC_R)->SetWindowText((LPCTSTR)rData);
 	}
 }
 
